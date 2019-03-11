@@ -1,0 +1,97 @@
+"""
+Run code in a Python 3.6+ IDE to play with repeated inputs (Try Repl.it)
+
+This is a variation on the game where the player guesses a randomly generated number and is told whether their guess is higher or lower than the secret number. The number of times the player guesses is their score. (The lower the score, the better)
+In this variation, the percent probability that they are lied to in whether their guess is too high or too low is the difference between their guess and the secret number, and if the difference is greater than 100, they are automatically receive a lie.
+Input 1 to play for the range 1-100, 2 for 1-150, 3 for 1-200, or 123 to play all three in that order. [UPDATE: Added 4, 5, and 12345 for Pentathlon Mode]
+"""
+
+from random import randint 
+
+difficulty = input("Enter difficulty level 1, 2, or 3 (hardest), or 123 for Triathlon Mode: ")
+print(difficulty)
+try:
+  if len(difficulty) == 1 and 1 <= int(difficulty) <= 5:
+    maxList = [(int(difficulty) + 1) * 50]
+  elif difficulty == "123":
+	  maxList = [100, 150, 200]
+  elif difficulty == "12345":
+	  maxList = [100, 150, 200, 250, 300]
+  else:
+    raise ValueError
+except:
+	raise ValueError("Unknown input")
+	
+roundNum = 0
+totalScore = 0
+
+lowerText = "The secret number is lower."
+higherText = "The secret number is higher."
+
+def lower():
+	print(f"{guess} {lowerText}")
+	
+def higher():
+	print(f"{guess} {higherText}")
+
+def lieCalc(num1,num2):
+	percent = abs(num1-num2)
+	chance = randint(1,100)
+	if chance <= percent:
+		return True
+	else:
+		return False
+
+for maxVal in maxList:
+	roundNum += 1
+	roundScore = 0
+	print("\n")
+	if len(maxList) != 1:
+	    print(f"ROUND {roundNum}")
+	x = randint(1, maxVal)
+	while True:
+		roundScore += 1
+		input_guess = input(f"Guess #{roundScore}: ")
+		if input_guess.upper() == "REVEAL":
+			print("REVEAL")
+			print(x)
+			roundScore += (maxVal // 2 - 1)  # Alternate values: [35, 65, 100] or [50, 80, 100]
+			break
+		try:
+			guess = float(input_guess)
+			if guess % 1 != 0 or not (1 <= guess <= maxVal):
+				raise ValueError
+		except:
+			print(f"Please input an integer between 1 and {maxVal}")
+			roundScore -= 1
+			continue
+		guess = int(guess)
+		if guess == x:
+			print(f"Congrats! The secret number was {x}!")
+			if len(maxList) == 1:
+				print(f"Your score is {roundScore}")
+				raise SystemExit
+			else:
+				print(f"Your score for Round #{roundNum} is {roundScore}")
+				break
+		elif guess < x:
+			if x - guess >= 100:
+				lower()
+			else:
+				if lieCalc(guess, x) == True:
+					lower()
+				else:
+					higher()
+		elif guess > x:
+			if guess - x >= 100:
+				higher()
+			else:
+				if lieCalc(guess,x) == True:
+					higher()
+				else:
+					lower()
+		if roundScore == 1 and roundNum == 1:  # May remove and have lowerText and higherText be set each iteration if faster
+			lowerText = "Lower"
+			higherText = "Higher"
+	totalScore += roundScore
+print(f"\nYour total score is {totalScore}")
